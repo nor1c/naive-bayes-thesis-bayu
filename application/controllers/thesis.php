@@ -114,49 +114,49 @@ class Thesis extends MY_Controller {
 			// consume and insert data pemetaan ke database
 			$this->consumeDataPemetaan($filePath);
 			
-			// pengolahan data master data (dapodik)
-			if (!$this->upload->do_upload('master_data')) {
-				$error = $this->upload->display_errors();
-				echo json_encode(array(
-					'error' => true,
-					'message' => $error,
-				));
-			} else {
-				$fileData = $this->upload->data();
-				$filePath = $fileData['full_path'];
+			// // pengolahan data master data (dapodik)
+			// if (!$this->upload->do_upload('master_data')) {
+			// 	$error = $this->upload->display_errors();
+			// 	echo json_encode(array(
+			// 		'error' => true,
+			// 		'message' => $error,
+			// 	));
+			// } else {
+			// 	$fileData = $this->upload->data();
+			// 	$filePath = $fileData['full_path'];
 	
-				// import data master ke database
-				$this->import($filePath, 'master');
+			// 	// import data master ke database
+			// 	$this->import($filePath, 'master');
 	
-				// import data peserta
-				if (!$this->upload->do_upload('data_mentah')) {
-					$error = $this->upload->display_errors();
-					echo json_encode(array(
-						'error' => true,
-						'message' => $error,
-					));
-				} else {
-					$fileData = $this->upload->data();
-					$filePath = $fileData['full_path'];
+			// 	// import data peserta
+			// 	if (!$this->upload->do_upload('data_mentah')) {
+			// 		$error = $this->upload->display_errors();
+			// 		echo json_encode(array(
+			// 			'error' => true,
+			// 			'message' => $error,
+			// 		));
+			// 	} else {
+			// 		$fileData = $this->upload->data();
+			// 		$filePath = $fileData['full_path'];
 		
-					// // (no logic) import data peserta ke database
-					// $reader = new Csv();
-					// $spreadsheet = $reader->load($filePath);
-					// $data = $spreadsheet->getActiveSheet()->toArray();
-					// $headers = array_shift($data);
-					// array_push($headers, 'status');
+			// 		// // (no logic) import data peserta ke database
+			// 		// $reader = new Csv();
+			// 		// $spreadsheet = $reader->load($filePath);
+			// 		// $data = $spreadsheet->getActiveSheet()->toArray();
+			// 		// $headers = array_shift($data);
+			// 		// array_push($headers, 'status');
 
-					$data_mentah = $this->import($filePath, 'data');
+			// 		$data_mentah = $this->import($filePath, 'data');
 	
-					// (with logic) klasifikasi menggunakan algoritma naive bayes dan import hasil akhir peserta ke database
-					// $this->consumeWithMachineLearning($headers, $data_mentah);
+			// 		// (with logic) klasifikasi menggunakan algoritma naive bayes dan import hasil akhir peserta ke database
+			// 		// $this->consumeWithMachineLearning($headers, $data_mentah);
 	
-					// join data peserta dengan data dapodik
-					// $this->mergePesertaWithDapodik();
+			// 		// join data peserta dengan data dapodik
+			// 		// $this->mergePesertaWithDapodik();
 	
-					redirect('thesis/persiapan_training');
-				}
-			}
+			// 		redirect('thesis/persiapan_training');
+			// 	}
+			// }
 		}
 	}
 
@@ -328,6 +328,42 @@ class Thesis extends MY_Controller {
 		return $digitCount;
 	}
 
+	public function getKelas($data, $kp, $sp) {
+		if (!empty($data[$kp][$sp])) {
+			return $data[$kp][$sp];
+		}
+
+		if ($kp > 0) {
+			return $this->getKelas($data, $kp - 1, $sp);
+		}
+
+		return null;
+	}
+
+	public function getPBProv($data, $kp, $sp) {
+		if (!empty($data[$kp][$sp])) {
+			return $data[$kp][$sp];
+		}
+
+		if ($kp > 0) {
+			return $this->getPBProv($data, $kp - 1, $sp);
+		}
+
+		return null;
+	}
+
+	public function getPB($data, $kp, $sp) {
+		if (!empty($data[$kp][$sp])) {
+			return $data[$kp][$sp];
+		}
+
+		if ($kp > 0) {
+			return $this->getPB($data, $kp - 1, $sp);
+		}
+
+		return null;
+	}
+
 	public function consumeDataPemetaan($filePath) {
 		$reader = new Csv();
         $spreadsheet = $reader->load($filePath);
@@ -338,7 +374,7 @@ class Thesis extends MY_Controller {
 		// collect data mapel
 		$headers = array_shift($data);
 		$data_mapel = array();
-		$starting_point = 2;
+		$starting_point = 4;
 		foreach ($headers as $index => $row) {
 			if ($index == $starting_point) {
 				if (!in_array($row, array("", "JUMLAH"))) {
@@ -352,23 +388,128 @@ class Thesis extends MY_Controller {
 			}
 		}
 
-		$data_pemetaan = array();
-
+		// collect prov
+		$data_prov = [];
 		foreach ($data as $index => $row) {
-			foreach ($data_mapel as $mapel) {
-				if ($row[1] != "") {
-					array_push($data_pemetaan, array(
-						'propinsi' => $row[1],
-						'mapel' => $mapel['mapel'],
-						'jumlah' => $row[$mapel['index']],
-					));
-				}
+			if ($row[1] != null) {
+				array_push($data_prov, $row[1]);
 			}
 		}
 
+		$data_pemetaan = array();
+
+		foreach ($data_prov as $kp => $prov) {
+			$sp = 4;
+			$spbprov = 5;
+			$spb = 6;
+			$spm = 2;
+			for ($i=0; $i <= 9; $i++) { 
+				if ($headers[$spm] == 'JUMLAH') {
+					$spm = 2;
+				} else {
+					$kelas = $this->getKelas($data, $kp, $sp);
+					$pb_prov = $this->getPBProv($data, $kp, $spbprov);
+					$pb = $this->getPB($data, $kp, $spb);
+					// echo $prov . ' - ' . $headers[$spm] . ' - ' . $kelas . '<br>';
+					array_push($data_pemetaan, array(
+						'propinsi' => $prov,
+						'pb_prov' => $pb_prov,
+						'pb' => $pb,
+						'mapel' => $headers[$spm],
+						'jumlah' => $kelas*20,
+						'cadangan' => $kelas*10,
+					));
+					$sp+=5;
+					$spbprov+=5;
+					$spb+=5;
+					$spm+=5;
+				}
+			}
+			// echo '<br>';
+		}
+		// echo json_encode($data_pemetaan); die;
+
+		$data_construct = [];
+		foreach ($data_pemetaan as $kdp => $dp) {
+			$mapel = $dp['mapel'];
+			$key = $dp['pb_prov'];
+			$keypb = $dp['pb'];
+
+			$data_construct[$mapel][$key]['jumlah'] = $dp['jumlah'];
+			$data_construct[$mapel][$key]['cadangan'] = $dp['cadangan'];
+
+			if (!isset($data_construct[$mapel])) {
+				$data_construct[$mapel] = [];
+			}
+			
+			if (!isset($data_construct[$mapel][$key]['provinces'])) {
+				$data_construct[$mapel][$key]['provinces'] = [];
+			}
+			
+			if (!isset($data_construct[$mapel][$key]['pb'])) {
+				$data_construct[$mapel][$key]['pb'] = [];
+			}
+			
+			// if (!isset($data_construct[$mapel][$key][$keypb]['pb'])) {
+			// 	$data_construct[$mapel][$key][$keypb]['pb'] = [];
+			// }
+
+			// if (!in_array($dp['pb'], $data_construct[$mapel][$key][$keypb]['pb'])) {
+			// 	array_push($data_construct[$mapel][$key][$keypb]['pb'], $dp['pb']);
+			// }
+
+			array_push($data_construct[$mapel][$key]['provinces'], 'Prov. ' . $dp['propinsi']);
+			if (!in_array($dp['pb'], $data_construct[$mapel][$key]['pb'])) {
+				array_push($data_construct[$mapel][$key]['pb'], $dp['pb']);
+			}
+		}
+		// echo json_encode($data_construct); die;
+
+		$data_final = [];
+		foreach ($data_construct as $mapel_key => $mapel) {
+			foreach ($mapel as $prov_key => $prov) {
+				// echo $dckey . '-' . $mpkey . $mapel['pb'] . '<br>';
+				// echo $prov_key . '' . '' . $mapel_key . json_encode($prov) . '<br>';
+				// foreach ($mapel as $prov_key => $prov) {
+				// 	echo json_encode($prov) . '<br>';
+					array_push($data_final, array(
+						'mapel' => $mapel_key,
+						'prov' => $prov_key,
+						'provinces' => json_encode($prov['provinces']),
+						'pb' => json_encode($prov['pb']),
+						'jumlah' => $prov['jumlah'],
+						'cadangan' => $prov['cadangan'],
+					));
+				// }
+			}
+		}
+		// echo json_encode($data_final); die;
+
+		// $sp = 4;
+		// $spm = 2;
+
+		// foreach ($data as $index => $row) {
+		// 	if ($headers[$spm] == 'JUMLAH') {
+		// 		echo '<br>';
+		// 		$sp = 4;
+		// 		$spm = 2;
+		// 	}
+
+		// 	// echo json_encode($row);
+		// 	echo json_encode(array(
+		// 		'prov' => $row[1],
+		// 		'mapel' => $headers[$spm],
+		// 		'kelas' => $row[$sp] == null ? $data[$index-1][$sp] : $row[$sp],
+		// 	));
+		// 	$sp+=5;
+		// 	$spm+=5;
+		// 	echo '<br>';
+		// }
+		// die;
+
 		$this->insertToDb(
-			array("propinsi", "mapel", "jumlah"),
-			$data_pemetaan,
+			array("mapel", "propinsi", "pb_prov", "pb_sekolah", "jumlah", "cadangan"),
+			$data_final,
 			"mapping"
 		);
 	}

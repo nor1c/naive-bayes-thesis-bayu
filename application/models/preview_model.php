@@ -213,7 +213,7 @@ class Preview_model extends CI_Model {
         ];
 	}
 
-	public function getDataPengecekanMapelDapodik($searchableFields, $pagination, $propinsi, $mapel, $search) {
+	public function getDataPemecahanMapelDapodik($searchableFields, $pagination, $propinsi, $mapel, $search) {
 		$this->db->select("data.*, FLOOR(DATEDIFF(NOW(), master.tgl_lahir) / 365.25) as usia, master.propinsi");
         $this->db->from('data');
         $this->db->join('master', "master.nik=data.nik", 'left');
@@ -245,6 +245,211 @@ class Preview_model extends CI_Model {
 
 		$this->db->where('data.prediksi', 'Layak');
 		$this->db->where('data.no IN (SELECT MAX(data.no) FROM data GROUP BY data.nik)', NULL, FALSE);
+
+		if ($search) {
+			$this->db->like('data.nik', $search);
+		}
+
+		if ($mapel) {
+			$this->db->where('data.mapel', $mapel);
+		}
+
+		$recordsTotal = $this->db->get()->row()->total;
+
+        return [
+            'data' => $data,
+            'recordsTotal' => $recordsTotal
+        ];
+	}
+
+	public function getDataPengecekanMapelDapodik($searchableFields, $pagination, $propinsi, $mapel, $search) {
+		$this->db->select("data.*, master.mapel_bispar, FLOOR(DATEDIFF(NOW(), master.tgl_lahir) / 365.25) as usia, master.propinsi");
+        $this->db->from('data');
+        $this->db->join('master', "master.nik=data.nik", 'left');
+
+		if ($search) {
+			$this->db->like('data.nik', $search);
+			$this->db->or_like('data.no_ukg', $search);
+			$this->db->or_like('data.nuptk', $search);
+			$this->db->or_like('data.npsn', $search);
+			$this->db->or_like('data.mapel', $search);
+		}
+
+		$this->db->where('data.prediksi', 'Layak');
+		$this->db->where('data.no IN (SELECT MAX(data.no) FROM data GROUP BY data.nik)', NULL, FALSE);
+
+		if ($mapel) {
+			$this->db->where('data.mapel', $mapel);
+		}
+
+        $data = $this->db->group_by('data.nik')
+						->order_by('data.no', 'ASC')
+						->limit($pagination['length'], $pagination['start'])
+						->get()
+						->result_array();
+
+        // count all records
+		$this->db->select('COUNT(DISTINCT(data.nik)) as total')
+				->from('data');
+
+		$this->db->where('data.prediksi', 'Layak');
+		$this->db->where('data.no IN (SELECT MAX(data.no) FROM data GROUP BY data.nik)', NULL, FALSE);
+
+		if ($search) {
+			$this->db->like('data.nik', $search);
+		}
+
+		if ($mapel) {
+			$this->db->where('data.mapel', $mapel);
+		}
+
+		$recordsTotal = $this->db->get()->row()->total;
+
+        return [
+            'data' => $data,
+            'recordsTotal' => $recordsTotal
+        ];
+	}
+
+	public function getDataHasilPengecekanMapelDapodik($searchableFields, $pagination, $propinsi, $mapel, $search) {
+		$this->db->select("data.*, master.mapel_bispar, FLOOR(DATEDIFF(NOW(), master.tgl_lahir) / 365.25) as usia, master.propinsi");
+        $this->db->from('data');
+        $this->db->join('master', "master.nik=data.nik AND TRIM(master.mapel_bispar)=data.mapel", 'left');
+
+		if ($search) {
+			$this->db->like('data.nik', $search);
+			$this->db->or_like('data.no_ukg', $search);
+			$this->db->or_like('data.nuptk', $search);
+			$this->db->or_like('data.npsn', $search);
+			$this->db->or_like('data.mapel', $search);
+		}
+
+		$this->db->where('data.prediksi', 'Layak');
+		$this->db->where('data.no IN (SELECT MAX(data.no) FROM data GROUP BY data.nik)', NULL, FALSE);
+		$this->db->where('master.mapel_bispar IS NOT NULL');
+
+		if ($mapel) {
+			$this->db->where('data.mapel', $mapel);
+		}
+
+        $data = $this->db->group_by('data.nik')
+						->order_by('data.no', 'ASC')
+						->limit($pagination['length'], $pagination['start'])
+						->get()
+						->result_array();
+
+        // count all records
+		$this->db->select('COUNT(DISTINCT(data.nik)) as total')
+				->from('data')
+				->join('master', "master.nik=data.nik AND TRIM(master.mapel_bispar)=data.mapel", 'left');
+
+		$this->db->where('data.prediksi', 'Layak');
+		$this->db->where('data.no IN (SELECT MAX(data.no) FROM data GROUP BY data.nik)', NULL, FALSE);
+		$this->db->where('master.mapel_bispar IS NOT NULL');
+
+		if ($search) {
+			$this->db->like('data.nik', $search);
+		}
+
+		if ($mapel) {
+			$this->db->where('data.mapel', $mapel);
+		}
+
+		$recordsTotal = $this->db->get()->row()->total;
+
+        return [
+            'data' => $data,
+            'recordsTotal' => $recordsTotal
+        ];
+	}
+
+	public function getDataPenggabunganDataAfterMapel($searchableFields, $pagination, $propinsi, $mapel, $search) {
+		$this->db->select("data.*, master.mapel_bispar, FLOOR(DATEDIFF(NOW(), master.tgl_lahir) / 365.25) as usia, master.propinsi");
+        $this->db->from('data');
+        $this->db->join('master', "master.nik=data.nik AND TRIM(master.mapel_bispar)=data.mapel", 'left');
+
+		if ($search) {
+			$this->db->like('data.nik', $search);
+			$this->db->or_like('data.no_ukg', $search);
+			$this->db->or_like('data.nuptk', $search);
+			$this->db->or_like('data.npsn', $search);
+			$this->db->or_like('data.mapel', $search);
+		}
+
+		$this->db->where('data.prediksi', 'Layak');
+		$this->db->where('data.no IN (SELECT MAX(data.no) FROM data GROUP BY data.nik)', NULL, FALSE);
+		$this->db->where('master.mapel_bispar IS NOT NULL');
+
+		if ($mapel) {
+			$this->db->where('data.mapel', $mapel);
+		}
+
+        $data = $this->db->group_by('data.nik')
+						->order_by('data.no', 'ASC')
+						->limit($pagination['length'], $pagination['start'])
+						->get()
+						->result_array();
+
+        // count all records
+		$this->db->select('COUNT(DISTINCT(data.nik)) as total')
+				->from('data')
+				->join('master', "master.nik=data.nik AND TRIM(master.mapel_bispar)=data.mapel", 'left');
+
+		$this->db->where('data.prediksi', 'Layak');
+		$this->db->where('data.no IN (SELECT MAX(data.no) FROM data GROUP BY data.nik)', NULL, FALSE);
+		$this->db->where('master.mapel_bispar IS NOT NULL');
+
+		if ($search) {
+			$this->db->like('data.nik', $search);
+		}
+
+		if ($mapel) {
+			$this->db->where('data.mapel', $mapel);
+		}
+
+		$recordsTotal = $this->db->get()->row()->total;
+
+        return [
+            'data' => $data,
+            'recordsTotal' => $recordsTotal
+        ];
+	}
+
+	public function getDataPemetaan($searchableFields, $pagination, $propinsi, $mapel, $search) {
+		$this->db->select("data.*, master.mapel_bispar, FLOOR(DATEDIFF(NOW(), master.tgl_lahir) / 365.25) as usia, master.propinsi");
+        $this->db->from('data');
+        $this->db->join('master', "master.nik=data.nik AND TRIM(master.mapel_bispar)=data.mapel", 'left');
+
+		if ($search) {
+			$this->db->like('data.nik', $search);
+			$this->db->or_like('data.no_ukg', $search);
+			$this->db->or_like('data.nuptk', $search);
+			$this->db->or_like('data.npsn', $search);
+			$this->db->or_like('data.mapel', $search);
+		}
+
+		$this->db->where('data.prediksi', 'Layak');
+		$this->db->where('data.no IN (SELECT MAX(data.no) FROM data GROUP BY data.nik)', NULL, FALSE);
+		$this->db->where('master.mapel_bispar IS NOT NULL');
+
+		if ($mapel) {
+			$this->db->where('data.mapel', $mapel);
+		}
+
+        $data = $this->db->group_by('data.nik')
+						->order_by('data.no', 'ASC')
+						->limit($pagination['length'], $pagination['start'])
+						->get()
+						->result_array();
+
+        // count all records
+		$this->db->select('COUNT(DISTINCT(data.nik)) as total')
+				->from('data')
+				->join('master', "master.nik=data.nik AND TRIM(master.mapel_bispar)=data.mapel", 'left');
+
+		$this->db->where('data.prediksi', 'Layak');
+		$this->db->where('data.no IN (SELECT MAX(data.no) FROM data GROUP BY data.nik)', NULL, FALSE);
+		$this->db->where('master.mapel_bispar IS NOT NULL');
 
 		if ($search) {
 			$this->db->like('data.nik', $search);

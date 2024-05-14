@@ -56,7 +56,7 @@
 		</li>
 	</ol>
 
-	<h3 class="text-lg font-medium">5.1. Pemeriksaan Mata Pelajaran sesuai Standar SIMPKB/DAPODIK</h3>
+	<h3 class="text-lg font-medium">5.2. Pengecekan Mata Pelajaran sesuai DAPODIK</h3>
 
 	<div class="mt-10">
 		<table id="previewTable" class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400" cellspacing="0">
@@ -68,18 +68,20 @@
 					<th width="150">No. UKG</th>
 					<th width="150">NUPTK</th>
 					<th width="150">NPSN</th>
-					<th width="250">Mata Pelajaran</th>
+					<th width="250">MaPel</th>
+					<th width="250">MaPel DAPODIK</th>
 					<th>No. HP</th>
 					<th>Email</th>
 					<th width="80">Usia</th>
 					<th width="200">Propinsi</th>
+					<th width="10">Verifikasi</th>
 				</tr>
 			</thead>
 		</table>
 	</div>
 
 	<div class="w-full text-right mt-12">
-		<a href="<?=site_url('preview/penggabungan_after_mapel')?>" class="px-5 py-3 text-xs font-bold rounded-lg bg-blue-500 text-white hover:bg-blue-700 hover:shadow-xl">PENGGABUNGAN DATA KEMBALI <i class="fa-solid fa-circle-right ml-1"></i></a>
+		<a href="<?=site_url('preview/hasil_pengecekan_mapel_dapodik')?>" class="px-5 py-3 text-xs font-bold rounded-lg bg-blue-500 text-white hover:bg-blue-700 hover:shadow-xl">HASIL PENGECEKAN MAPEL DAPODIK <i class="fa-solid fa-circle-right ml-1"></i></a>
 	</div>
 </div>
 
@@ -160,6 +162,10 @@ foreach ($mapels as $mapel) {
                 },
                 {
                     "orderable": false,
+                    "searchable": true,
+                },
+                {
+                    "orderable": false,
                     "searchable": false,
                 },
                 {
@@ -186,8 +192,24 @@ foreach ($mapels as $mapel) {
                     "orderable": false,
                     "searchable": false,
                 },
+                {
+                    "orderable": false,
+                    "searchable": false,
+                },
             ],
-            "columnDefs": [],
+            // "columnDefs": [
+			// 	{
+			// 		"targets": 7,
+			// 		"render": function(data, row, row) {
+			// 			return row[6] + ' - ' + row[7] ? 'Sama' : 'Tidak Sama'
+			// 		}
+			// 	}
+			// ],
+            // "fnRowCallback": function(nRow, data, iDisplayIndex, iDisplayIndexFull) {
+            //     if (data[6] != (data[7] != null ? data[7].trim() : null)) {
+            //         $('td', nRow).css('background-color', '#ffe3e3');
+            //     }
+            // },
             'select': {
                 'style': 'multi'
             },
