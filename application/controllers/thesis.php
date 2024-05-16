@@ -463,7 +463,7 @@ class Thesis extends MY_Controller {
 				array_push($data_construct[$mapel][$key]['pb'], $dp['pb']);
 			}
 		}
-		// echo json_encode($data_construct); die;
+		echo json_encode($data_construct); die;
 
 		$data_final = [];
 		foreach ($data_construct as $mapel_key => $mapel) {

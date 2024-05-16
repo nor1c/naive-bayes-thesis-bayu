@@ -392,4 +392,35 @@ class Preview extends MY_Controller {
 
         echo json_encode($data);
 	}
+
+	public function get_pemetaan_classes_each_mapel() {
+		$mapel = $this->input->get('mapel');
+
+		$pb_sekolah = $this->Preview_model->getPemetaanClassEachMapel($mapel);
+
+		$classes = [];
+		foreach ($pb_sekolah as $sekolah) {
+			$pb_total = count(json_decode($sekolah['pb_sekolah']));
+			foreach (json_decode($sekolah['pb_sekolah']) as $pb_idx => $pb) {
+				$need = $sekolah['jumlah'] / $pb_total;
+				$start = (($pb_idx)*$need)+1;
+				if ($pb_total > 1) {
+					$end = ($pb_idx+1)*$need;
+				} else {
+					$end = (($pb_idx))+$need;
+				}
+				array_push($classes, array(
+					'pb' => $pb,
+					'need' => $need,
+					'pb_idx' => $pb_idx,
+					'take_from' => $start,
+					'take_to' => $end,
+					'cadangan_from' => 0,
+					'cadangan_to' => 0
+				));
+			}
+		}
+
+		echo json_encode($classes);
+	}
 }
