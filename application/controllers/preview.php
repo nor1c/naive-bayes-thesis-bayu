@@ -368,17 +368,20 @@ class Preview extends MY_Controller {
 	}
 
 	public function data_pemetaan() {
+        $mapel = $this->input->post('mapel');
+        $pb = $this->input->post('pb');
+		
+		// 
+		$data_pb = $this->get_pemetaan_classes_each_mapel($mapel, $pb);
+
 		$searchKeyword = $this->input->post('search')['value'];
 
 		$pagination = array(
-            'start' => $this->input->post('start'),
-            'length' => $this->input->post('length')
+            'start' => $data_pb['take_from'],
+            'length' => $data_pb['need']
         );
 
-        $propinsi = $this->input->post('propinsi');
-        $mapel = $this->input->post('mapel');
-
-        $naskah = $this->Preview_model->getDataPemetaan($this->searchableFields, $pagination, $propinsi, $mapel, $searchKeyword);
+        $naskah = $this->Preview_model->getDataPemetaan($this->searchableFields, $pagination, $mapel, $pb, $data_pb['pb_prov'], $searchKeyword);
 
         $formattedData = array_map(function ($item) {
 			return [$item['no'], $item['nama'], $item['nik'], $item['no_ukg'], $item['nuptk'], $item['npsn'], $item['mapel'], $item['no_hp'], $item['email'], $item['usia'], $item['propinsi']];
@@ -393,34 +396,71 @@ class Preview extends MY_Controller {
         echo json_encode($data);
 	}
 
-	public function get_pemetaan_classes_each_mapel() {
-		$mapel = $this->input->get('mapel');
-
+	public function get_pemetaan_classes($mapel) {
 		$pb_sekolah = $this->Preview_model->getPemetaanClassEachMapel($mapel);
 
 		$classes = [];
 		foreach ($pb_sekolah as $sekolah) {
 			$pb_total = count(json_decode($sekolah['pb_sekolah']));
-			foreach (json_decode($sekolah['pb_sekolah']) as $pb_idx => $pb) {
+			foreach (json_decode($sekolah['pb_sekolah']) as $pb_idx => $pbs) {
 				$need = $sekolah['jumlah'] / $pb_total;
+				$cadangan_need = $sekolah['cadangan'] / $pb_total;
 				$start = (($pb_idx)*$need)+1;
+				$cadangan_start = $sekolah['jumlah']+((($pb_idx)*$cadangan_need)+1);
+
 				if ($pb_total > 1) {
 					$end = ($pb_idx+1)*$need;
+					$cadangan_end = $sekolah['jumlah']+(($pb_idx+1)*$cadangan_need);
 				} else {
-					$end = (($pb_idx))+$need;
+					$end = $pb_idx+$need;
+					$cadangan_end = $sekolah['jumlah']+($pb_idx+$cadangan_need);
 				}
+
 				array_push($classes, array(
-					'pb' => $pb,
+					'mapel' => $mapel,
+					'pb' => $pbs,
+					// 'original_need' => $sekolah['jumlah'],
+					// 'original_cadangan' => $sekolah['cadangan'],
 					'need' => $need,
-					'pb_idx' => $pb_idx,
+					// 'propinsi' => $sekolah['propinsi'],
+					'pb_prov' => $sekolah['pb_prov'],
+					// 'pb_idx' => $pb_idx,
 					'take_from' => $start,
 					'take_to' => $end,
-					'cadangan_from' => 0,
-					'cadangan_to' => 0
+					'cadangan_from' => $cadangan_start,
+					'cadangan_to' => $cadangan_end,
 				));
 			}
 		}
 
+		return $classes;
+	}
+
+	public function get_pb_list_each_mapel() {
+		$mapel = $this->input->get('mapel');
+		
+		$classes = $this->get_pemetaan_classes($mapel);
+
 		echo json_encode($classes);
+	}
+
+	public function get_pemetaan_classes_each_mapel($mapelParam = '', $pbParam = '') {
+		$mapel = $mapelParam != '' ? $mapelParam : $this->input->get('mapel');
+		$pb = $pbParam != '' ? $pbParam : $this->input->get('pb');
+
+		$classes = $this->get_pemetaan_classes($mapel);
+
+		$selKey = 0;
+		$data = array_filter($classes, function($class) use ($mapel, $pb) {
+			return $class['mapel'] == $mapel && $class['pb'] == $pb;
+		});
+
+		$selectedData = null;
+		foreach ($data as $item) {
+			$selectedData = $item;
+			break;
+		}
+
+		return $selectedData;
 	}
 }

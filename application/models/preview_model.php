@@ -123,6 +123,8 @@ class Preview_model extends CI_Model {
 						->get()
 						->result_array();
 
+		echo $this->db->last_query(); die;
+
         // count all records
 		$this->db->select('COUNT(DISTINCT(data.nik)) as total')
 				->from('data');
@@ -422,14 +424,7 @@ class Preview_model extends CI_Model {
 						->result_array();
 	}
 
-	public function getDataPemetaan($searchableFields, $pagination, $propinsi, $mapel, $search) {
-		// get PB prov
-		$pb_prov = $this->db->select('pb_prov')
-							->from('mapping')
-							->where('mapel', $mapel)
-							->get()
-							->result_array();
-
+	public function getDataPemetaan($searchableFields, $pagination, $mapel, $pb, $pb_prov, $search) {
 		$this->db->select("data.*, master.mapel_bispar, FLOOR(DATEDIFF(NOW(), master.tgl_lahir) / 365.25) as usia, master.propinsi");
         $this->db->from('data');
         $this->db->join('master', "master.nik=data.nik AND TRIM(master.mapel_bispar)=data.mapel", 'left');
@@ -445,7 +440,8 @@ class Preview_model extends CI_Model {
 		$this->db->where('data.prediksi', 'Layak');
 		$this->db->where('data.no IN (SELECT MAX(data.no) FROM data GROUP BY data.nik)', NULL, FALSE);
 		$this->db->where('master.mapel_bispar IS NOT NULL');
-		$this->db->where('data.mapel IN ' . str_replace('[', '(', str_replace(']', ')', $pb_prov)));
+		$pb_prov = str_replace("\\", '', json_encode($pb_prov));
+		$this->db->where('master.propinsi IN ' . str_replace('"[', '(', str_replace(']"', ')', str_replace("", '', $pb_prov))));
 
 		if ($mapel) {
 			$this->db->where('data.mapel', $mapel);
@@ -457,29 +453,9 @@ class Preview_model extends CI_Model {
 						->get()
 						->result_array();
 
-        // count all records
-		$this->db->select('COUNT(DISTINCT(data.nik)) as total')
-				->from('data')
-				->join('master', "master.nik=data.nik AND TRIM(master.mapel_bispar)=data.mapel", 'left');
-
-		$this->db->where('data.prediksi', 'Layak');
-		$this->db->where('data.no IN (SELECT MAX(data.no) FROM data GROUP BY data.nik)', NULL, FALSE);
-		$this->db->where('master.mapel_bispar IS NOT NULL');
-		$this->db->where('data.mapel IN ' . str_replace('[', '(', str_replace(']', ')', $pb_prov)));
-
-		if ($search) {
-			$this->db->like('data.nik', $search);
-		}
-
-		if ($mapel) {
-			$this->db->where('data.mapel', $mapel);
-		}
-
-		$recordsTotal = $this->db->get()->row()->total;
-
         return [
             'data' => $data,
-            'recordsTotal' => $recordsTotal
+            'recordsTotal' => $pagination['length']
         ];
 	}
 }
