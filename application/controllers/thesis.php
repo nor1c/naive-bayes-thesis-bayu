@@ -8,6 +8,18 @@ use Phpml\Classification\NaiveBayes;
 
 class Thesis extends MY_Controller {
     private $searchableFields = ['no_job', 'kode', 'judul', 'penulis'];
+	private $mapels = array(
+		'Administrasi Profesional/OTKP',
+		'Akuntansi',
+		'Bisnis Daring Pemasaran',
+		'Caregiver',
+		'Kecantikan',
+		'Pekerjaan Sosial',
+		'Perhotelan',
+		'Tata Boga',
+		'Tata Busana',
+		'Usaha Perjalanan Wisata',
+	);
 
 	public function __construct() {
 		parent::__construct();
@@ -114,49 +126,49 @@ class Thesis extends MY_Controller {
 			// consume and insert data pemetaan ke database
 			$this->consumeDataPemetaan($filePath);
 			
-			// // pengolahan data master data (dapodik)
-			// if (!$this->upload->do_upload('master_data')) {
-			// 	$error = $this->upload->display_errors();
-			// 	echo json_encode(array(
-			// 		'error' => true,
-			// 		'message' => $error,
-			// 	));
-			// } else {
-			// 	$fileData = $this->upload->data();
-			// 	$filePath = $fileData['full_path'];
+			// pengolahan data master data (dapodik)
+			if (!$this->upload->do_upload('master_data')) {
+				$error = $this->upload->display_errors();
+				echo json_encode(array(
+					'error' => true,
+					'message' => $error,
+				));
+			} else {
+				$fileData = $this->upload->data();
+				$filePath = $fileData['full_path'];
 	
-			// 	// import data master ke database
-			// 	$this->import($filePath, 'master');
+				// import data master ke database
+				$this->import($filePath, 'master');
 	
-			// 	// import data peserta
-			// 	if (!$this->upload->do_upload('data_mentah')) {
-			// 		$error = $this->upload->display_errors();
-			// 		echo json_encode(array(
-			// 			'error' => true,
-			// 			'message' => $error,
-			// 		));
-			// 	} else {
-			// 		$fileData = $this->upload->data();
-			// 		$filePath = $fileData['full_path'];
+				// import data peserta
+				if (!$this->upload->do_upload('data_mentah')) {
+					$error = $this->upload->display_errors();
+					echo json_encode(array(
+						'error' => true,
+						'message' => $error,
+					));
+				} else {
+					$fileData = $this->upload->data();
+					$filePath = $fileData['full_path'];
 		
-			// 		// // (no logic) import data peserta ke database
-			// 		// $reader = new Csv();
-			// 		// $spreadsheet = $reader->load($filePath);
-			// 		// $data = $spreadsheet->getActiveSheet()->toArray();
-			// 		// $headers = array_shift($data);
-			// 		// array_push($headers, 'status');
+					// // (no logic) import data peserta ke database
+					// $reader = new Csv();
+					// $spreadsheet = $reader->load($filePath);
+					// $data = $spreadsheet->getActiveSheet()->toArray();
+					// $headers = array_shift($data);
+					// array_push($headers, 'status');
 
-			// 		$data_mentah = $this->import($filePath, 'data');
+					$data_mentah = $this->import($filePath, 'data');
 	
-			// 		// (with logic) klasifikasi menggunakan algoritma naive bayes dan import hasil akhir peserta ke database
-			// 		// $this->consumeWithMachineLearning($headers, $data_mentah);
+					// (with logic) klasifikasi menggunakan algoritma naive bayes dan import hasil akhir peserta ke database
+					// $this->consumeWithMachineLearning($headers, $data_mentah);
 	
-			// 		// join data peserta dengan data dapodik
-			// 		// $this->mergePesertaWithDapodik();
+					// join data peserta dengan data dapodik
+					// $this->mergePesertaWithDapodik();
 	
-			// 		redirect('thesis/persiapan_training');
-			// 	}
-			// }
+					redirect('thesis/persiapan_training');
+				}
+			}
 		}
 	}
 
@@ -190,17 +202,19 @@ class Thesis extends MY_Controller {
 				}
 			}
 
-			// if ($db_name == 'master') {
-			// 	// remove "Prov. " dari nama propinsi data master
-			// 	$row[11] = str_replace("Prov. ", "", $row[11]);
+			if ($db_name == 'master') {
+				// remove "Prov. " dari nama propinsi data master
+				$row[11] = str_replace("Prov. ", "", $row[11]);
 
-			// // translate mapel peserta ke mapel data mapping
-			// if ($row[10] == 'Kecantikan Kulit' || $row[10] == 'Kecantikan Rambut') {
-			// 	$row[10] = 'Kecantikan';
-			// } else if ($row[10] == 'Social Care') {
-			// 	$row[10] = 'Pekerjaan Sosial';
-			// }
-			// }
+				// translate mapel peserta ke mapel data mapping
+				if ($row[10] == 'Kecantikan Kulit' || $row[10] == 'Kecantikan Rambut') {
+					$row[10] = 'Kecantikan';
+				} else if ($row[10] == 'Social Care') {
+					$row[10] = 'Pekerjaan Sosial';
+				} else if ($row[10] == 'Jasa Boga') {
+					$row[10] = 'Tata Boga';
+				}
+			}
 
 			$data = array_combine($headers, $row);
 
@@ -463,7 +477,6 @@ class Thesis extends MY_Controller {
 				array_push($data_construct[$mapel][$key]['pb'], $dp['pb']);
 			}
 		}
-		echo json_encode($data_construct); die;
 
 		$data_final = [];
 		foreach ($data_construct as $mapel_key => $mapel) {
@@ -527,23 +540,6 @@ class Thesis extends MY_Controller {
 
 		echo json_encode($final_data);
 	}
-
-	// blm kepake
-	// public function export() {
-	// 	$spreadsheet = new Spreadsheet();
-	// 	$activeWorksheet = $spreadsheet->getActiveSheet();
-	// 	$activeWorksheet->setCellValue('A1', 'Hello World!');
-
-    //     $writer = new Xlsx($spreadsheet);
-    //     $filename = 'excel-report';
-        
-    //     header('Content-Type: application/vnd.ms-excel');
-    //     header('Content-Disposition: attachment;filename="'. $filename .'.xlsx"'); 
-    //     header('Cache-Control: max-age=0');
-
-    //     $writer = IOFactory::createWriter($spreadsheet, 'Xlsx');
-    //     $writer->save('php://output');
-	// }
 
 	public function probabilitas() {
 		if ($this->session->userdata('authorized')) {
@@ -1247,9 +1243,22 @@ class Thesis extends MY_Controller {
 			'precision' => $precision,
 			'recall' => $recall,
 		));
-	}
+	}	
 
-	public function list() {
-		echo 'list';
-	}
+	// blm kepake
+	// public function export() {
+	// 	$spreadsheet = new Spreadsheet();
+	// 	$activeWorksheet = $spreadsheet->getActiveSheet();
+	// 	$activeWorksheet->setCellValue('A1', 'Hello World!');
+
+    //     $writer = new Xlsx($spreadsheet);
+    //     $filename = 'excel-report';
+        
+    //     header('Content-Type: application/vnd.ms-excel');
+    //     header('Content-Disposition: attachment;filename="'. $filename .'.xlsx"'); 
+    //     header('Cache-Control: max-age=0');
+
+    //     $writer = IOFactory::createWriter($spreadsheet, 'Xlsx');
+    //     $writer->save('php://output');
+	// }
 }

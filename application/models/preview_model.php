@@ -123,8 +123,6 @@ class Preview_model extends CI_Model {
 						->get()
 						->result_array();
 
-		echo $this->db->last_query(); die;
-
         // count all records
 		$this->db->select('COUNT(DISTINCT(data.nik)) as total')
 				->from('data');
@@ -457,5 +455,30 @@ class Preview_model extends CI_Model {
             'data' => $data,
             'recordsTotal' => $pagination['length']
         ];
+	}
+
+	public function getPesertaEachMapelAndPb($mapel, $prov, $need, $take_from) {
+		$this->db->select("data.*, master.mapel_bispar, FLOOR(DATEDIFF(NOW(), master.tgl_lahir) / 365.25) as usia, master.propinsi");
+        
+		$this->db->from('data');
+        $this->db->join('master', "master.nik=data.nik AND TRIM(master.mapel_bispar)=data.mapel", 'left');
+
+		$this->db->where('data.prediksi', 'Layak');
+		$this->db->where('data.no IN (SELECT MAX(data.no) FROM data GROUP BY data.nik)', NULL, FALSE);
+		$this->db->where('master.mapel_bispar IS NOT NULL');
+		$prov_name = str_replace("\\", '', json_encode($prov));
+		$this->db->where('master.propinsi IN ' . str_replace('"[', '(', str_replace(']"', ')', str_replace("", '', $prov_name))));
+
+		if ($mapel) {
+			$this->db->where('data.mapel', $mapel);
+		}
+
+        $data = $this->db->group_by('data.nik')
+						->order_by('data.no', 'ASC')
+						->limit($need, $take_from)
+						->get()
+						->result_array();
+
+		return $data;
 	}
 }

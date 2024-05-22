@@ -10,7 +10,7 @@
 	<div class="flex flex-col gap-2">
 		<label>Tentukan Besaran Data Training</label>
 		<div class="flex flex-row gap-0">
-			<input id="trainingPercentage" type="number" width="500" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-l-lg focus:ring-blue-500 focus:border-blue-500 block w-1/4 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+			<input id="trainingPercentage" type="number" width="500" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-l-lg focus:ring-blue-500 focus:border-blue-500 block w-1/4 p-2.5">
 			<div class="flex flex-row gap-0">
 				<span id="percentMode" onClick="changeMode('percent')" class="change-mode py-2 px-3 text-center bg-gray-300 hover:bg-blue-500 hover:text-white hover:border-blue-500 border border-gray-300 cursor-pointer">%</span>
 				<span id="numberMode" onClick="changeMode('number')" class="change-mode py-2 px-3 text-center bg-gray-300 hover:bg-blue-500 hover:text-white hover:border-blue-500 border border-gray-300 cursor-pointer rounded-r-lg">0</span>

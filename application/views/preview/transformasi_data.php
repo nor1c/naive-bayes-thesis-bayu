@@ -1,5 +1,5 @@
 <div class="px-5 w-full mx-auto text-xs">
-	<ol class="mb-10 flex items-center justify-center w-full mt-10 text-xs font-medium text-center text-gray-500 bg-white border border-gray-200 rounded-lg shadow-sm sm:text-base sm:p-4 sm:space-x-4 rtl:space-x-reverse">
+	<ol class="mb-10 flex items-center justify-center w-full text-xs font-medium text-center text-gray-500 bg-white border border-gray-200 rounded-lg shadow-sm sm:text-base sm:p-4 sm:space-x-4 rtl:space-x-reverse">
 		<a href="<?=site_url('preview/pengumpulan')?>"">
 			<li class="flex items-center text-sm text-gray-500 hover:text-blue-500">
 				<span class="flex items-center justify-center w-5 h-5 me-2 text-xs border border-gray-500 rounded-full shrink-0">1</span>
@@ -11,7 +11,7 @@
 		</a>
 		<a href="<?=site_url('preview/penyaringan')?>"">
 			<li class="flex items-center text-sm">
-				<span class="flex items-center justify-center w-5 h-5 me-2 text-xs border border-blue-500 rounded-full shrink-0">2</span>
+				<span class="flex items-center justify-center w-5 h-5 me-2 text-xs border border-gray-500 rounded-full shrink-0">2</span>
 				Penyaringan Data
 				<svg class="w-2 h-2 ms-2 sm:ms-4 rtl:rotate-180" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 12 10">
 					<path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m7 9 4-4-4-4M1 9l4-4-4-4"/>
@@ -55,8 +55,8 @@
 	<h3 class="text-lg font-medium">3. Transformasi Data Kriteria (X)</h3>
 
 	<div class="mt-10">
-		<table id="previewTable" class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400" cellspacing="0">
-			<thead class="text-xs text-gray-700 uppercase bg-blue-100 dark:bg-gray-700 dark:text-gray-400">
+		<table id="previewTable" class="w-full text-sm text-left rtl:text-right text-gray-500" cellspacing="0">
+			<thead class="text-xs text-gray-700 uppercase bg-blue-100">
 				<tr>
 					<th width="60">No. Urut</th>
 					<th width="220">Nama</th>

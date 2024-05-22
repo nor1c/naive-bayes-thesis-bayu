@@ -1,5 +1,5 @@
 <div class="w-full px-5">
-	<ol class="mb-10 flex items-center justify-center w-full mt-10 text-xs font-medium text-center text-gray-500 bg-white border border-gray-200 rounded-lg shadow-sm sm:text-base sm:p-4 sm:space-x-4 rtl:space-x-reverse">
+	<ol class="mb-10 flex items-center justify-center w-full text-xs font-medium text-center text-gray-500 bg-white border border-gray-200 rounded-lg shadow-sm sm:text-base sm:p-4 sm:space-x-4 rtl:space-x-reverse">
 		<a href="<?=site_url('preview/pengumpulan')?>"">
 			<li class="flex items-center text-sm text-gray-500 hover:text-blue-500">
 				<span class="flex items-center justify-center w-5 h-5 me-2 text-xs border border-gray-500 rounded-full shrink-0">1</span>

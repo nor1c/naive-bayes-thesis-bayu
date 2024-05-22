@@ -1,5 +1,5 @@
 <div class="px-5 w-full mx-auto text-xs">
-	<ol class="mb-10 flex items-center justify-center w-full mt-10 text-xs font-medium text-center text-gray-500 bg-white border border-gray-200 rounded-lg shadow-sm sm:text-base sm:p-4 sm:space-x-4 rtl:space-x-reverse">
+	<ol class="mb-10 flex items-center justify-center w-full text-xs font-medium text-center text-gray-500 bg-white border border-gray-200 rounded-lg shadow-sm sm:text-base sm:p-4 sm:space-x-4 rtl:space-x-reverse">
 		<a href="<?=site_url('preview/pengumpulan')?>"">
 			<li class="flex items-center text-sm text-gray-500 hover:text-blue-500">
 				<span class="flex items-center justify-center w-5 h-5 me-2 text-xs border border-gray-500 rounded-full shrink-0">1</span>
@@ -59,8 +59,8 @@
 	<h3 class="text-lg font-medium">5.3. Hasil Pengecekan Mata Pelajaran</h3>
 
 	<div class="mt-10">
-		<table id="previewTable" class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400" cellspacing="0">
-			<thead class="text-xs text-gray-700 uppercase bg-blue-100 dark:bg-gray-700 dark:text-gray-400">
+		<table id="previewTable" class="w-full text-sm text-left rtl:text-right text-gray-500" cellspacing="0">
+			<thead class="text-xs text-gray-700 uppercase bg-blue-100">
 				<tr>
 					<th width="60">No. Urut</th>
 					<th width="220">Nama</th>
@@ -83,7 +83,7 @@
 	</div>
 </div>
 
-<ul class="fixed bg-white bottom-0 left-2 flex flex-wrap text-sm font-medium text-center text-gray-500 border-b border-gray-200 dark:border-gray-700 dark:text-gray-400">
+<ul class="fixed bg-white bottom-0 left-2 flex flex-wrap text-sm font-medium text-center text-gray-500 border-b border-gray-200">
 <?php
 $mapels = array(
 	'Administrasi Profesional/OTKP',

@@ -3,13 +3,13 @@
 		<!-- filters -->
 		<form id="filter" class="flex flex-row justify-between mb-10">
 			<div class="flex flex-row gap-2">
-				<select name="propinsi" id="propinsi"  class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+				<select name="propinsi" id="propinsi"  class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
 					<option value="" selected>Pilih Propinsi</option>
 					<?php foreach ($propinsi as $p) { ?>
 						<option value="<?=$p['propinsi']?>"><?=$p['propinsi']?></option>
 					<?php } ?>
 				</select>
-				<select name="mapel" id="mapel"  class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+				<select name="mapel" id="mapel"  class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
 					<option value="" selected>Pilih Mapel</option>
 					<?php foreach ($mapel as $p) { ?>
 						<option value="<?=$p['mapel']?>"><?=$p['mapel']?></option>
@@ -19,8 +19,8 @@
 			<button class="px-5 py-3 text-xs font-bold rounded-lg bg-green-600 text-white hover:bg-green-700 hover:shadow-xl">SIMPAN KE EXCEL</button>
 		</form>
 
-		<table id="previewTable" class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400" cellspacing="0">
-			<thead class="text-xs text-gray-700 uppercase bg-gray-100 dark:bg-gray-700 dark:text-gray-400">
+		<table id="previewTable" class="w-full text-sm text-left rtl:text-right text-gray-500" cellspacing="0">
+			<thead class="text-xs text-gray-700 uppercase bg-gray-100">
 				<tr>
 					<th scope="col" class="px-6 py-3">#</th>
 					<th scope="col" class="px-6 py-3">Nama</th>

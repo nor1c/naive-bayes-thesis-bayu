@@ -1,7 +1,25 @@
 <?php
 
+use PhpOffice\PhpSpreadsheet\IOFactory;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\Reader\Csv;
+use Phpml\Classification\NaiveBayes;
+
 class Preview extends MY_Controller {
     private $searchableFields = ['no_job', 'kode', 'judul', 'penulis'];
+	private $mapels = array(
+		'Administrasi Profesional/OTKP',
+		'Akuntansi',
+		'Bisnis Daring Pemasaran',
+		'Caregiver',
+		'Kecantikan',
+		'Pekerjaan Sosial',
+		'Perhotelan',
+		'Tata Boga',
+		'Tata Busana',
+		'Usaha Perjalanan Wisata',
+	);
 
 	public function __construct() {
 		parent::__construct();
@@ -396,6 +414,37 @@ class Preview extends MY_Controller {
         echo json_encode($data);
 	}
 
+	public function data_pemetaan_cadangan() {
+        $mapel = $this->input->post('mapel');
+        $pb = $this->input->post('pb');
+		
+		// 
+		$data_pb = $this->get_pemetaan_classes_each_mapel($mapel, $pb);
+
+		$searchKeyword = $this->input->post('search')['value'];
+
+		// echo json_encode($data_pb); die;
+
+		$pagination = array(
+            'start' => $data_pb['cadangan_from'],
+            'length' => $data_pb['cadangan_need']
+        );
+
+        $naskah = $this->Preview_model->getDataPemetaan($this->searchableFields, $pagination, $mapel, $pb, $data_pb['pb_prov'], $searchKeyword);
+
+        $formattedData = array_map(function ($item) {
+			return [$item['no'], $item['nama'], $item['nik'], $item['no_ukg'], $item['nuptk'], $item['npsn'], $item['mapel'], $item['no_hp'], $item['email'], $item['usia'], $item['propinsi']];
+        }, $naskah['data']);
+
+        $data = [
+            'recordsTotal' => $naskah['recordsTotal'],
+            'recordsFiltered' => $naskah['recordsTotal'],
+            'data' => $formattedData
+        ];
+
+        echo json_encode($data);
+	}
+
 	public function get_pemetaan_classes($mapel) {
 		$pb_sekolah = $this->Preview_model->getPemetaanClassEachMapel($mapel);
 
@@ -420,7 +469,7 @@ class Preview extends MY_Controller {
 					'mapel' => $mapel,
 					'pb' => $pbs,
 					// 'original_need' => $sekolah['jumlah'],
-					// 'original_cadangan' => $sekolah['cadangan'],
+					'cadangan_need' => $cadangan_need,
 					'need' => $need,
 					// 'propinsi' => $sekolah['propinsi'],
 					'pb_prov' => $sekolah['pb_prov'],
@@ -462,5 +511,194 @@ class Preview extends MY_Controller {
 		}
 
 		return $selectedData;
+	}
+
+	public function export_data() {
+		$classes = [];
+		foreach ($this->mapels as $mapel) {
+			$mapel_classes = $this->get_pemetaan_classes($mapel);
+			$classes[$mapel] = $mapel_classes;
+		}
+		
+		return $classes;
+	}
+
+	public function convertToArray($data) {
+		if (is_object($data)) {
+			// Convert object to array
+			$data = (array)$data;
+		}
+		
+		if (is_array($data)) {
+			// Recursively apply conversion to each element
+			foreach ($data as &$element) {
+				$element = $this->convertToArray($element);
+			}
+		}
+		
+		return $data;
+	}
+
+    private function createExcelFile($filename, $sheets) {
+		$spreadsheet = new Spreadsheet();
+	
+		$sheetIndex = 0;
+		foreach ($sheets as $sheetName => $data) {
+			if ($sheetIndex > 0) {
+				$spreadsheet->createSheet();
+			}
+			$spreadsheet->setActiveSheetIndex($sheetIndex);
+			$sheet = $spreadsheet->getActiveSheet();
+			$sheet->setTitle($sheetName);
+
+			$sheet->getStyle('C')->getNumberFormat()->setFormatCode('0');
+			$sheet->getColumnDimension('B')->setWidth(30);
+			$sheet->getColumnDimension('C')->setWidth(14);
+			$sheet->getColumnDimension('D')->setWidth(25);
+			$sheet->getColumnDimension('E')->setWidth(20);
+			$sheet->getColumnDimension('F')->setWidth(18);
+	
+			foreach ($data as $cell => $value) {
+				if (is_array($value) && strpos($cell, ':')) {
+					// Handle ranges
+					$range = explode(':', $cell);
+					$startCell = $range[0];
+					$sheet->fromArray($value, null, $startCell);
+				} else {
+					// Handle single cell
+					$sheet->setCellValue($cell, $value);
+				}
+			}
+	
+			$sheetIndex++;
+		}
+	
+		// Set the first sheet as the active sheet
+		$spreadsheet->setActiveSheetIndex(0);
+	
+		$writer = new Xlsx($spreadsheet);
+		$writer->save($filename);
+	}
+
+	public function export() {
+		// Temporary directory to store the Excel files
+		$tempDir = sys_get_temp_dir() . '/excel_files/';
+		if (!is_dir($tempDir)) {
+			mkdir($tempDir, 0777, true);
+		}
+
+		
+		$init_data = $this->export_data();
+		$excel_data = [];
+	
+		// Define data with customizable cell positions
+		$fileData = [];
+
+		$no = 1;
+		foreach ($init_data as $mapel_name => $pb) {
+			$filename = str_replace('/', '_', $mapel_name) . ".xlsx";
+			$sheets = [];
+
+			$no_sheet = 1;
+			foreach ($pb as $pb_data) {
+				$sheetName = substr(str_replace('/', '_', $pb_data['pb']), 0, 31);
+
+				$peserta = $this->Preview_model->getPesertaEachMapelAndPb($mapel_name, $pb_data['pb_prov'], $pb_data['need'], $pb_data['take_from']);
+
+				$ppp = [];
+				foreach ($peserta as $i => $p) {
+					array_push($ppp, array(
+						$i+1,
+						$p['nama'],
+						$p['no_ukg'],
+						strtoupper($p['instansi']),
+						str_replace('Prov. ', '', $p['propinsi']),
+						$p['no_hp'],
+					));
+				}
+
+				$sheetData = [
+					'A2' => 'PROGLI',
+					'B2' => ': ' . $pb_data['mapel'],
+					'A3' => 'GEL',
+					'B3' => ': 1',
+					'A4' => 'KELAS',
+					'B4' => ': A',
+					'A5' => 'PB',
+					'B5' => ': ' . $pb_data['pb'],
+					'A7:F7' => ['No.', 'Nama', 'No. UKG', 'Instansi', 'Propinsi', 'No Handphone'],
+					'A8:F'.(8+$pb_data['need']) => $ppp
+				];
+				$sheets[$sheetName] = $sheetData;
+
+				$no_sheet++;
+			}
+	
+			$fileData[$filename] = $sheets;
+
+			$no++;
+		}
+		// echo json_encode($fileData); die;
+	
+		// // Example loop to generate file data dynamically
+		// for ($i = 1; $i <= 5; $i++) {
+		// 	$filename = "file{$i}.xlsx";
+		// 	$sheets = [];
+	
+		// 	// Generate sheets data
+		// 	for ($j = 1; $j <= 2; $j++) {
+		// 		$sheetName = "Sheet{$j}";
+		// 		$sheetData = [
+		// 			'A2' => "PROGLI - File {$i}, Sheet {$j}",
+		// 			'A3' => 'GEL',
+		// 			'A4' => 'KELAS',
+		// 			'A5' => 'PB',
+		// 			'A7:F7' => ['Header1', 'Header2', 'Header3', 'Header4', 'Header5', 'Header6'],
+		// 			'A8:F27' => [
+		// 				['Row1-Col1', 'Row1-Col2', 'Row1-Col3', 'Row1-Col4', 'Row1-Col5', 'Row1-Col6'],
+		// 				['Row2-Col1', 'Row2-Col2', 'Row2-Col3', 'Row2-Col4', 'Row2-Col5', 'Row2-Col6'],
+		// 				// Add more rows as needed
+		// 			]
+		// 		];
+		// 		$sheets[$sheetName] = $sheetData;
+		// 	}
+	
+		// 	$fileData[$filename] = $sheets;
+		// }
+	
+		// Create Excel files
+		foreach ($fileData as $filename => $sheets) {
+			$this->createExcelFile($tempDir . $filename, $sheets);
+		}
+	
+		// Create a ZIP archive
+		$zipFilename = $tempDir . 'excel_files.zip';
+		$zip = new ZipArchive();
+		if ($zip->open($zipFilename, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
+			exit("Cannot open <$zipFilename>\n");
+		}
+	
+		// Add Excel files to the ZIP archive
+		foreach ($fileData as $filename => $sheets) {
+			$zip->addFile($tempDir . $filename, $filename);
+		}
+	
+		$zip->close();
+	
+		// Serve the ZIP file for download
+		header('Content-Type: application/zip');
+		header('Content-Disposition: attachment; filename="PEMETAAN.zip"');
+		header('Content-Length: ' . filesize($zipFilename));
+	
+		readfile($zipFilename);
+	
+		// Clean up temporary files
+		foreach ($fileData as $filename => $sheets) {
+			unlink($tempDir . $filename);
+		}
+		unlink($zipFilename);
+		rmdir($tempDir);
+	
+		exit();
 	}
 }
