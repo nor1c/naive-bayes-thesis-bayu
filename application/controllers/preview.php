@@ -3,6 +3,9 @@
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Style\Border;
+use PhpOffice\PhpSpreadsheet\Style\Color;
 use PhpOffice\PhpSpreadsheet\Reader\Csv;
 use Phpml\Classification\NaiveBayes;
 
@@ -552,21 +555,46 @@ class Preview extends MY_Controller {
 			$sheet->setTitle($sheetName);
 
 			$sheet->getStyle('C')->getNumberFormat()->setFormatCode('0');
+			$sheet->getStyle('A7:F7')->getFont()->setBold(true);
+			$sheet->getStyle('A7:F7')->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB('d9e3f2');
+			
 			$sheet->getColumnDimension('B')->setWidth(30);
 			$sheet->getColumnDimension('C')->setWidth(14);
 			$sheet->getColumnDimension('D')->setWidth(25);
 			$sheet->getColumnDimension('E')->setWidth(20);
 			$sheet->getColumnDimension('F')->setWidth(18);
 	
+			$pass_cadangan = false;
+			$pass_no_after_cadangan = false;
 			foreach ($data as $cell => $value) {
 				if (is_array($value) && strpos($cell, ':')) {
 					// Handle ranges
 					$range = explode(':', $cell);
 					$startCell = $range[0];
 					$sheet->fromArray($value, null, $startCell);
+
+					if ($value != '') {
+						$sheet->getStyle($cell)->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN)->setColor(new Color(Color::COLOR_BLACK));
+					}
+
+					if ($pass_cadangan && !$pass_no_after_cadangan) {
+						$pass_no_after_cadangan = true;
+
+						$sheet->getStyle($cell)->getFont()->setBold(true);
+						$sheet->getStyle($cell)->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB('d9e3f2');
+					}
 				} else {
 					// Handle single cell
 					$sheet->setCellValue($cell, $value);
+
+					if ($value != '') {
+						$sheet->getStyle($cell)->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN)->setColor(new Color(Color::COLOR_BLACK));
+					}
+
+					if ($value == 'CADANGAN') {
+						$pass_cadangan = true;
+						$sheet->getStyle($cell)->getFont()->setBold(true);
+					}
 				}
 			}
 	
@@ -617,6 +645,24 @@ class Preview extends MY_Controller {
 					));
 				}
 
+				// get cadangan list
+				$cadangan = $this->Preview_model->getPesertaEachMapelAndPb($mapel_name, $pb_data['pb_prov'], $pb_data['cadangan_need'], $pb_data['cadangan_from']);
+				// echo json_encode($cadangan); die;
+
+				$list_cadangan = [];
+				$start_cadangan_cell_num = 8+$pb_data['need'];
+				foreach ($cadangan as $i => $c) {
+					$start_cadangan_cell_num+=1;
+					array_push($list_cadangan, array(
+						$i+1,
+						$c['nama'],
+						$c['no_ukg'],
+						strtoupper($c['instansi']),
+						str_replace('Prov. ', '', $c['propinsi']),
+						$c['no_hp'],
+					));
+				}
+
 				$sheetData = [
 					'A2' => 'PROGLI',
 					'B2' => ': ' . $pb_data['mapel'],
@@ -627,7 +673,10 @@ class Preview extends MY_Controller {
 					'A5' => 'PB',
 					'B5' => ': ' . $pb_data['pb'],
 					'A7:F7' => ['No.', 'Nama', 'No. UKG', 'Instansi', 'Propinsi', 'No Handphone'],
-					'A8:F'.(8+$pb_data['need']) => $ppp
+					'A8:F'.(8+$pb_data['need']) => $ppp,
+					'A'.((8+$pb_data['need'])+1) => 'CADANGAN',
+					'A'.((8+$pb_data['need'])+2).':F'.((8+$pb_data['need'])+2) => ['No.', 'Nama', 'No. UKG', 'Instansi', 'Propinsi', 'No Handphone'],
+					'A'.((8+$pb_data['need'])+3).':F'.(((8+$pb_data['need'])+3)+$pb_data['cadangan_need']) => $list_cadangan,
 				];
 				$sheets[$sheetName] = $sheetData;
 

@@ -98,7 +98,7 @@ class Thesis extends MY_Controller {
 		if ($this->session->userdata('authorized')) {
 			$data['page'] = 'preview/persiapan_training';
 
-			$data['total_data_peserta'] = $this->db->query("SELECT COUNT(*) as total FROM data")->row()->total;
+			$data['total_data_peserta'] = $this->db->query("SELECT COUNT(DISTINCT(data.nik)) as total FROM data")->row()->total;
 	
 			$this->load->view('templates', $data);
 		} else {
