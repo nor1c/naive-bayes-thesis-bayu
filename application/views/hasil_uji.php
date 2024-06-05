@@ -60,19 +60,46 @@
 		<div>
 			<h3 class="text-base font-medium">Tabel Confusion Matrix</h3>
 		
-			<div class="w-1/4 overflow-x-auto shadow-md sm:rounded-lg mt-5">
+			<div class="w-2/3 flex flex-row gap-4 overflow-x-auto mt-5">
 				<table class="w-full text-left rtl:text-right text-gray-500">
 					<tbody>
 						<tr class="border-b border-gray-200">
-							<td class="px-6 py-4 font-semibold w-1/2">Akurasi</td>
+							<td class="px-6 py-2 font-semibold"></td>
+							<td class="px-6 py-2 font-semibold" rowspan="1"></td>
+							<td class="bg-green-100 px-6 py-2 font-bold text-center" colspan="2">AKTUAL</td>
+						</tr>
+						<tr class="border-b border-gray-200">
+							<td class="px-6 py-2 font-semibold"></td>
+							<td class="px-6 py-2 font-semibold"></td>
+							<td class="bg-yellow-100 px-6 py-2 font-bold text-center">Positif</td>
+							<td class="bg-yellow-100 px-6 py-2 font-bold text-center">Negatif</td>
+						</tr>
+						<tr class="border-b border-gray-200">
+							<td class="bg-green-100 px-6 py-2 font-bold" rowspan="2">PREDIKSI</td>
+							<td class="bg-yellow-100 px-6 py-2 font-bold">Positif</td>
+							<td class="px-6 py-2 text-center"><?=$confusion_matrix->tp?></td>
+							<td class="px-6 py-2 text-center"><?=$confusion_matrix->fp?></td>
+						</tr>
+						<tr class="border-b border-gray-200">
+							<td class="bg-yellow-100 px-6 py-2 font-bold">Negatif</td>
+							<td class="px-6 py-2 text-center"><?=$confusion_matrix->fn?></td>
+							<td class="px-6 py-2 text-center"><?=$confusion_matrix->tn?></td>
+						</tr>
+					</tbody>
+				</table>
+
+				<table class="w-full text-left rtl:text-right text-gray-500">
+					<tbody>
+						<tr class="border-b border-gray-200">
+							<td class="bg-green-100 px-6 py-4 font-semibold w-1/2">Akurasi</td>
 							<td class="px-6 py-4 bg-gray-50"><?=$confusion_matrix->accuracy?>%</td>
 						</tr>
 						<tr class="border-b border-gray-200">
-							<td class="px-6 py-4 font-semibold w-1/2">Presisi</td>
+							<td class="bg-green-100 px-6 py-4 font-semibold w-1/2">Presisi</td>
 							<td class="px-6 py-4 bg-gray-50"><?=$confusion_matrix->precision?>%</td>
 						</tr>
 						<tr class="border-b border-gray-200">
-							<td class="px-6 py-4 font-semibold w-1/2">Recall</td>
+							<td class="bg-green-100 px-6 py-4 font-semibold w-1/2">Recall</td>
 							<td class="px-6 py-4 bg-gray-50"><?=$confusion_matrix->recall?>%</td>
 						</tr>
 					</tbody>

@@ -1194,12 +1194,16 @@ class Thesis extends MY_Controller {
 			// $hasil_data_uji[$peserta['no']]['base_two_values_c0'] = $base_two_values_c0;
 
 			if ($peserta['status'] == 'Layak' && $peserta['status'] == $status) {
+				// jika aktual Layak, dan aktual sama dengan prediksi, maka masuk ke tp
 				$tp += 1;
 			} else if ($peserta['status'] == 'Tidak Layak' && $peserta['status'] == $status) {
+				// jika aktual Tidak Layak, dan aktual sama dengan prediksi, maka masuk ke tn
 				$tn += 1;
-			} else if ($peserta['status'] == 'Layak' && $peserta['status'] != $status) {
+			} else if ($peserta['status'] == 'Tidak Layak' && $peserta['status'] != $status) {
+				// jika aktual Tidak Layak, dan aktual tidak sama dengan prediksi, maka masuk ke fp
 				$fp += 1;
-			} else {
+			} else if ($peserta['status'] == 'Layak' && $peserta['status'] != $status) {
+				// jika aktual Layak, dan aktual tidak sama dengan prediksi, maka masuk ke fn
 				$fn += 1;
 			}
 
@@ -1223,9 +1227,9 @@ class Thesis extends MY_Controller {
 
 		// echo json_encode($hasil_data_uji); die;
 
-		$accuracy = round(($tp+$tn) / ($tp+$fp+$fn+$tn) * 100, 1) . '%';
-		$precision = round(($tp / ($tp+$fp)) * 100, 1) . '%';
-		$recall = round(($tp / ($tp+$fn)) * 100, 1) . '%';
+		$accuracy = round(($tp+$tn) / ($tp+$fp+$fn+$tn) * 100, 1) . '%'; // (TP+TN)/(TP+FP+FN+TN)
+		$precision = round(($tp / ($tp+$fp)) * 100, 1) . '%'; // TP/(TP+FP)
+		$recall = round(($tp / ($tp+$fn)) * 100, 1) . '%'; // TP/(TP+FN)
 
 		// echo json_encode(array(
 		// 	'layak' => $p_layak,
@@ -1242,6 +1246,10 @@ class Thesis extends MY_Controller {
 			'accuracy' => $accuracy,
 			'precision' => $precision,
 			'recall' => $recall,
+			'tp' => $tp,
+			'tn' => $tn,
+			'fp' => $fp,
+			'fn' => $fn,
 		));
 	}	
 
