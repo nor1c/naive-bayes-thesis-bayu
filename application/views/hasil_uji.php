@@ -91,16 +91,25 @@
 				<table class="w-full text-left rtl:text-right text-gray-500">
 					<tbody>
 						<tr class="border-b border-gray-200">
-							<td class="bg-green-100 px-6 py-4 font-semibold w-1/2">Akurasi</td>
-							<td class="px-6 py-4 bg-gray-50"><?=$confusion_matrix->accuracy?>%</td>
+							<td class="bg-green-100 px-6 py-4 font-semibold w-1/6">Akurasi</td>
+							<td style="background:#f2f0ea" class="px-6 py-4 font-semibold w-1/4">
+								<img src="<?=base_url('assets/formula/accuracy.png')?>" alt="">
+							</td>
+							<td class="px-6 py-4 bg-gray-50 w-1/6"><?=$confusion_matrix->accuracy?>%</td>
 						</tr>
 						<tr class="border-b border-gray-200">
-							<td class="bg-green-100 px-6 py-4 font-semibold w-1/2">Presisi</td>
-							<td class="px-6 py-4 bg-gray-50"><?=$confusion_matrix->precision?>%</td>
+							<td class="bg-green-100 px-6 py-4 font-semibold w-1/6">Presisi</td>
+							<td style="background:#f2f0ea" class="px-6 py-4 font-semibold w-1/4">
+								<img src="<?=base_url('assets/formula/precision.png')?>" alt="">
+							</td>
+							<td class="px-6 py-4 bg-gray-50 w-1/6"><?=$confusion_matrix->precision?>%</td>
 						</tr>
 						<tr class="border-b border-gray-200">
-							<td class="bg-green-100 px-6 py-4 font-semibold w-1/2">Recall</td>
-							<td class="px-6 py-4 bg-gray-50"><?=$confusion_matrix->recall?>%</td>
+							<td class="bg-green-100 px-6 py-4 font-semibold w-1/6">Recall</td>
+							<td style="background:#f2f0ea" class="px-6 py-4 font-semibold w-1/4">
+								<img src="<?=base_url('assets/formula/recall.png')?>" alt="">
+							</td>
+							<td class="px-6 py-4 bg-gray-50 w-1/6"><?=$confusion_matrix->recall?>%</td>
 						</tr>
 					</tbody>
 				</table>
